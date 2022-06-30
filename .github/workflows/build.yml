@@ -18,16 +18,6 @@ env:
   # containerDefinitions section of your task definition
 
 jobs:
-  sonarQubeTrigger:
-    name: SonarQube Trigger
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - name: SonarQube Scan
-        uses: kitabisa/sonarqube-action@v1.1.0
-        with:
-          host: ${{ secrets.SONARQUBE_URL }}
-          login: ${{ secrets.SONARQUBE_ACCESS_TOKEN }}
   build-and-deploy:
     name: Provision ECR Repositories, Build and Push Backend Image, Build and Push Frontend Image, Deploy Latest Infrastructure, Including Deploying Latest Frontend and Backend Service Images to ECS
     runs-on: ubuntu-latest

@@ -1,0 +1,177 @@
+on: push
+name: Main Workflow
+
+env:
+  AWS_DEFAULT_REGION: us-east-2
+  FRONTEND_ECR_REPOSITORY: demo-application-frontend
+  BACKEND_ECR_REPOSITORY: demo-application-backend
+  FRONTEND_ECS_SERVICE: frontend-ecs-service
+  BACKEND_ECS_SERVICE: backend-ecs-service
+  ECS_CLUSTER: demo-application-ecs-cluster
+  FRONTEND_ECS_TASK_DEFINITION: frontend-service-task-definition.json # set this to the path to your Amazon ECS task definition
+  # file, e.g. .aws/task-definition.json
+  BACKEND_ECS_TASK_DEFINITION: backend-service-task-definition.json # set this to the path to your Amazon ECS task definition
+  # file, e.g. .aws/task-definition.json
+  FRONTEND_CONTAINER_NAME: demo-application-frontend-container # set this to the name of the container in the
+  # containerDefinitions section of your task definition
+  BACKEND_CONTAINER_NAME: demo-application-backend-container # set this to the name of the container in the
+  # containerDefinitions section of your task definition
+
+jobs:
+  sonarQubeTrigger:
+    name: SonarQube Trigger
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: SonarQube Scan
+        uses: kitabisa/sonarqube-action@v1.1.0
+        with:
+          host: ${{ secrets.SONARQUBE_URL }}
+          login: ${{ secrets.SONARQUBE_ACCESS_TOKEN }}
+  build-and-deploy:
+    name: Provision ECR Repositories, Build and Push Backend Image, Build and Push Frontend Image, Deploy Latest Infrastructure, Including Deploying Latest Frontend and Backend Service Images to ECS
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' # only run on commits to remote master
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform Format
+        id: fmt
+        run: |
+          cd infrastructure
+          terraform fmt -check
+
+      - name: Terraform Init
+        id: init
+        run: |
+          cd infrastructure
+          terraform init
+
+      - name: Terraform Validate
+        id: validate
+        run: |
+          cd infrastructure
+          terraform validate -no-color
+
+      # Provisioning the ECR repositories so that they're available for first pushes to them
+      # that happens in later steps below,
+      # when this pipeline runs for the first time.
+      # That way, this pipeline can simply be run, after the S3 bucket for remote state, GitHub actions
+      # secrets, etc. are set up.
+      - name: Terraform Apply
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          GOOGLE_RECAPTCHA_SECRET: ${{ secrets.GOOGLE_RECAPTCHA_SECRET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          TOKEN_LIFE: ${{ secrets.TOKEN_LIFE }}
+          DATABASE_SERVER_ENDPOINT: ${{ secrets.DATABASE_SERVER_ENDPOINT }}
+          DATABASE_SERVER_USERNAME: ${{ secrets.DATABASE_SERVER_USERNAME }}
+          DATABASE_SERVER_PASSWORD: ${{ secrets.DATABASE_SERVER_PASSWORD }}
+          DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+          ADMINISTRATIVE_PASSWORD: ${{ secrets.ADMINISTRATIVE_PASSWORD }}
+        run: |
+          cd infrastructure
+          terraform apply \
+          -target=module.ecr_frontend \
+          -target=module.ecr_backend \
+          -var="image_tag=$IMAGE_TAG" \
+          -var="google_recaptcha_secret=$GOOGLE_RECAPTCHA_SECRET" \
+          -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
+          -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \
+          -var="aws_default_region=$AWS_DEFAULT_REGION" \
+          -var="jwt_secret=$JWT_SECRET" \
+          -var="token_life=$TOKEN_LIFE" \
+          -var="database_server_endpoint=$DATABASE_SERVER_ENDPOINT" \
+          -var="database_server_username=$DATABASE_SERVER_USERNAME" \
+          -var="database_server_password=$DATABASE_SERVER_PASSWORD" \
+          -var="database_name=$DATABASE_NAME" \
+          -var="administrative_password=$ADMINISTRATIVE_PASSWORD" \
+          --auto-approve
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push backend image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to ECS.
+          pwd
+          ls -la
+          cd backend
+          docker build -t $ECR_REGISTRY/$BACKEND_ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$BACKEND_ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$BACKEND_ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3.3.0
+
+      - name: Build Front Application Files to Build Folder
+        run: |
+          cd frontend
+          npm ci --production
+          npm run build || true
+
+      - name: Build, tag, and push frontend image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to ECS.
+          cd frontend
+          docker build -t $ECR_REGISTRY/$FRONTEND_ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$FRONTEND_ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$FRONTEND_ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Terraform Apply
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          GOOGLE_RECAPTCHA_SECRET: ${{ secrets.GOOGLE_RECAPTCHA_SECRET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          TOKEN_LIFE: ${{ secrets.TOKEN_LIFE }}
+          DATABASE_SERVER_ENDPOINT: ${{ secrets.DATABASE_SERVER_ENDPOINT }}
+          DATABASE_SERVER_USERNAME: ${{ secrets.DATABASE_SERVER_USERNAME }}
+          DATABASE_SERVER_PASSWORD: ${{ secrets.DATABASE_SERVER_PASSWORD }}
+          DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+          ADMINISTRATIVE_PASSWORD: ${{ secrets.ADMINISTRATIVE_PASSWORD }}
+        run:  |
+          cd infrastructure
+          terraform apply \
+          -var="image_tag=$IMAGE_TAG" \
+          -var="google_recaptcha_secret=$GOOGLE_RECAPTCHA_SECRET" \
+          -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
+          -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \
+          -var="aws_default_region=$AWS_DEFAULT_REGION" \
+          -var="jwt_secret=$JWT_SECRET" \
+          -var="token_life=$TOKEN_LIFE" \
+          -var="database_server_endpoint=$DATABASE_SERVER_ENDPOINT" \
+          -var="database_server_username=$DATABASE_SERVER_USERNAME" \
+          -var="database_server_password=$DATABASE_SERVER_PASSWORD" \
+          -var="database_name=$DATABASE_NAME" \
+          -var="administrative_password=$ADMINISTRATIVE_PASSWORD" \
+          --auto-approve

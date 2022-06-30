@@ -64,34 +64,18 @@ jobs:
       - name: Terraform Apply
         env:
           IMAGE_TAG: ${{ github.sha }}
-          GOOGLE_RECAPTCHA_SECRET: ${{ secrets.GOOGLE_RECAPTCHA_SECRET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          TOKEN_LIFE: ${{ secrets.TOKEN_LIFE }}
-          DATABASE_SERVER_ENDPOINT: ${{ secrets.DATABASE_SERVER_ENDPOINT }}
-          DATABASE_SERVER_USERNAME: ${{ secrets.DATABASE_SERVER_USERNAME }}
-          DATABASE_SERVER_PASSWORD: ${{ secrets.DATABASE_SERVER_PASSWORD }}
-          DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
-          ADMINISTRATIVE_PASSWORD: ${{ secrets.ADMINISTRATIVE_PASSWORD }}
         run: |
           cd infrastructure
           terraform apply \
           -target=module.ecr_frontend \
           -target=module.ecr_backend \
           -var="image_tag=$IMAGE_TAG" \
-          -var="google_recaptcha_secret=$GOOGLE_RECAPTCHA_SECRET" \
           -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
           -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \
-          -var="aws_default_region=$AWS_DEFAULT_REGION" \
-          -var="jwt_secret=$JWT_SECRET" \
-          -var="token_life=$TOKEN_LIFE" \
-          -var="database_server_endpoint=$DATABASE_SERVER_ENDPOINT" \
-          -var="database_server_username=$DATABASE_SERVER_USERNAME" \
-          -var="database_server_password=$DATABASE_SERVER_PASSWORD" \
-          -var="database_name=$DATABASE_NAME" \
-          -var="administrative_password=$ADMINISTRATIVE_PASSWORD" \
+          -var="aws_default_region=$AWS_DEFAULT_REGION"
           --auto-approve
 
       - name: Login to Amazon ECR
@@ -138,30 +122,14 @@ jobs:
       - name: Terraform Apply
         env:
           IMAGE_TAG: ${{ github.sha }}
-          GOOGLE_RECAPTCHA_SECRET: ${{ secrets.GOOGLE_RECAPTCHA_SECRET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          TOKEN_LIFE: ${{ secrets.TOKEN_LIFE }}
-          DATABASE_SERVER_ENDPOINT: ${{ secrets.DATABASE_SERVER_ENDPOINT }}
-          DATABASE_SERVER_USERNAME: ${{ secrets.DATABASE_SERVER_USERNAME }}
-          DATABASE_SERVER_PASSWORD: ${{ secrets.DATABASE_SERVER_PASSWORD }}
-          DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
-          ADMINISTRATIVE_PASSWORD: ${{ secrets.ADMINISTRATIVE_PASSWORD }}
         run:  |
           cd infrastructure
           terraform apply \
           -var="image_tag=$IMAGE_TAG" \
-          -var="google_recaptcha_secret=$GOOGLE_RECAPTCHA_SECRET" \
           -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
           -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \
           -var="aws_default_region=$AWS_DEFAULT_REGION" \
-          -var="jwt_secret=$JWT_SECRET" \
-          -var="token_life=$TOKEN_LIFE" \
-          -var="database_server_endpoint=$DATABASE_SERVER_ENDPOINT" \
-          -var="database_server_username=$DATABASE_SERVER_USERNAME" \
-          -var="database_server_password=$DATABASE_SERVER_PASSWORD" \
-          -var="database_name=$DATABASE_NAME" \
-          -var="administrative_password=$ADMINISTRATIVE_PASSWORD" \
           --auto-approve

@@ -21,7 +21,7 @@ jobs:
   build-and-deploy:
     name: Provision ECR Repositories, Build and Push Backend Image, Build and Push Frontend Image, Deploy Latest Infrastructure, Including Deploying Latest Frontend and Backend Service Images to ECS
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' # only run on commits to remote master
+    if: github.ref == 'refs/heads/main' # only run on commits to remote master
     environment: production
 
     steps:

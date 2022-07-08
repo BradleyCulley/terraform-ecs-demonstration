@@ -44,27 +44,6 @@ jobs:
           then
           echo "Bucket doesn't exist, creating the bucket...";
 
-          cd infrastructure/s3-bucket-for-terraform-remote-state
-
-          terraform init
-
-          terraform apply \
-          -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
-          -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \
-          -var="aws_region=$AWS_REGION" \
-          --auto-approve
-
-          elif echo "${bucketstatus}" | grep 'Forbidden';
-          then
-          echo "Bucket exists but not owned, stoping the run"
-          exit 1;
-          elif echo "${bucketstatus}" | grep 'Bad Request';
-          then
-          echo "Bucket name specified is less than 3 or greater than 63 characters, stopping the run"
-          exit 1;
-          else
-          echo "Bucket owned and exists, no need to do anything";
-          fi
 
       - name: Terraform Init
         id: init

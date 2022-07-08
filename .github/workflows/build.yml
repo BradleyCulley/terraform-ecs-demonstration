@@ -39,10 +39,7 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           # Begin check for current status of the bucket
-          bucketstatus=$(aws s3api head-bucket --bucket "terraform-ecs-demonstration-remote-state-bucket" 2>&1)
-          if echo "${bucketstatus}" | grep 'Not Found';
-          then
-          echo "Bucket doesn't exist, creating the bucket...";
+          aws s3 ls
 
 
       - name: Terraform Init

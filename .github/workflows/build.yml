@@ -32,23 +32,6 @@ jobs:
           cd infrastructure
           terraform fmt -check
 
-      - name: Terraform Init
-        id: init
-        run: |
-          cd infrastructure
-          terraform init
-
-      - name: Terraform Validate
-        id: validate
-        run: |
-          cd infrastructure
-          terraform validate -no-color
-
-      # Provisioning the ECR repositories so that they're available for first pushes to them
-      # that happens in later steps below,
-      # when this pipeline runs for the first time.
-      # That way, this pipeline can simply be run, after the S3 bucket for remote state, GitHub actions
-      # secrets, etc. are set up.
       - name: Create Terraform Remote State S3 Bucket If It Don't Already Exist
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -68,6 +51,7 @@ jobs:
           -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
           -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \
           -var="aws_region=$AWS_REGION" \
+          -var="remote_state_s3_bucket_name=$S3_BUCKET_FOR_TERRAFORM_REMOTE_STATE" \
           --auto-approve
 
           elif echo "${bucketstatus}" | grep 'Forbidden';
@@ -82,6 +66,18 @@ jobs:
           echo "Bucket owned and exists, no need to do anything";
           fi
 
+      - name: Terraform Init
+        id: init
+        run: |
+          cd infrastructure
+          terraform init
+
+      - name: Terraform Validate
+        id: validate
+        run: |
+          cd infrastructure
+          terraform validate -no-color
+
       # Provisioning the ECR repositories so that they're available for first pushes to them
       # that happens in later steps below,
       # when this pipeline runs for the first time.
@@ -93,6 +89,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_BUCKET_FOR_TERRAFORM_REMOTE_STATE: ${{ secrets.S3_BUCKET_FOR_TERRAFORM_REMOTE_STATE }}
         run: |
           cd infrastructure
           terraform apply \
@@ -102,6 +99,7 @@ jobs:
           -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
           -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \
           -var="aws_region=$AWS_REGION" \
+          -var="remote_state_s3_bucket_name=$S3_BUCKET_FOR_TERRAFORM_REMOTE_STATE" \
           --auto-approve
 
       - name: Login to Amazon ECR
@@ -151,6 +149,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_BUCKET_FOR_TERRAFORM_REMOTE_STATE: ${{ secrets.S3_BUCKET_FOR_TERRAFORM_REMOTE_STATE }}
         run:  |
           cd infrastructure
           terraform apply \
@@ -158,4 +157,5 @@ jobs:
           -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
           -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \
           -var="aws_region=$AWS_REGION" \
+          -var="remote_state_s3_bucket_name=$S3_BUCKET_FOR_TERRAFORM_REMOTE_STATE" \
           --auto-approve

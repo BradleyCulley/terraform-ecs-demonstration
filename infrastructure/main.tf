@@ -18,6 +18,10 @@ variable "aws_region" {
   type = string
 }
 
+variable "remote_state_s3_bucket_name" {
+  type = string #this is: terraform-ecs-demonstration-remote-state-bucket
+}
+
 variable "jwt_secret" {
   type = string
 }
@@ -55,9 +59,9 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "demo-application-terraform-remote-state-bucket"
-    key    = "tf-state-key"
-    region = "us-east-1"
+    bucket = var.remote_state_s3_bucket_name
+    key    = "terraform-remote-state-key"
+    region = var.aws_region
   }
 }
 

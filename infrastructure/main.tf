@@ -59,7 +59,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket = var.remote_state_s3_bucket_name
+    bucket = "terraform-ecs-demonstration-remote-state-bucket"
     key    = "terraform-remote-state-key"
     region = var.aws_region
   }
@@ -71,7 +71,7 @@ provider "aws" {
 
 module "s3" {
   source      = "./s3"
-  bucket_name = "demo-application-np-presentations"
+  bucket_name = "demo-application-s3-bucket"
 }
 
 module "ecr_frontend" {

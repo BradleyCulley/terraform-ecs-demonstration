@@ -61,7 +61,7 @@ terraform {
   backend "s3" {
     bucket = "terraform-ecs-demonstration-remote-state-bucket"
     key    = "terraform-remote-state-key"
-    region = var.aws_region
+    region = "us-east-1"
   }
 }
 

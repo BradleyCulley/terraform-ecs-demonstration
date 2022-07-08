@@ -18,10 +18,6 @@ variable "aws_region" {
   type = string
 }
 
-variable "remote_state_s3_bucket_name" {
-  type = string #this is: terraform-ecs-demonstration-remote-state-bucket
-}
-
 variable "jwt_secret" {
   type = string
 }

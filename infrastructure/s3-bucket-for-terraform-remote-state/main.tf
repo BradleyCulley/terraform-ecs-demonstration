@@ -17,10 +17,6 @@ variable "aws_region" {
   type = string
 }
 
-variable "remote_state_s3_bucket_name" {
-  type = string
-}
-
 resource "aws_s3_bucket" "bucket" {
   bucket = "terraform-ecs-demonstration-remote-state-bucket"
   acl    = "private"

@@ -22,7 +22,7 @@ variable "remote_state_s3_bucket_name" {
 }
 
 resource "aws_s3_bucket" "bucket" {
-  bucket = var.remote_state_s3_bucket_name
+  bucket = "terraform-ecs-demonstration-remote-state-bucket"
   acl    = "private"
 }
 

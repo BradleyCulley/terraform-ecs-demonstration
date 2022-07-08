@@ -38,7 +38,7 @@ variable "aws_secret_access_key" {
   type = string
 }
 
-variable "aws_default_region" {
+variable "aws_region" {
   type = string
 }
 
@@ -93,7 +93,7 @@ resource "aws_ecs_task_definition" "service" {
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/demo-application-backend-cloudwatch-group",
-          "awslogs-region": "us-east-2",
+          "awslogs-region": "us-east-1",
           "awslogs-stream-prefix": "ecs"
         }
       },
@@ -120,7 +120,7 @@ resource "aws_ecs_task_definition" "service" {
           { "name" : "GOOGLE_RECAPTCHA_SECRET", "value" : "${var.google_recaptcha_secret}" },
           { "name" : "AWS_ACCESS_KEY_ID", "value" : "${var.aws_access_key_id}" },
           { "name" : "AWS_SECRET_ACCESS_KEY", "value" : "${var.aws_secret_access_key}" },
-          { "name" : "AWS_DEFAULT_REGION", "value" : "${var.aws_default_region}" },
+          { "name" : "AWS_REGION", "value" : "${var.aws_region}" },
           { "name" : "JWT_SECRET", "value" : "${var.jwt_secret}" },
           { "name" : "TOKEN_LIFE", "value" : "${var.token_life}" },
           { "name" : "DATABASE_SERVER_ENDPOINT", "value" : "${var.database_server_endpoint}" },

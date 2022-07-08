@@ -22,7 +22,7 @@ variable "aws_secret_access_key" {
   type = string
 }
 
-variable "aws_default_region" {
+variable "aws_region" {
   type = string
 }
 
@@ -126,7 +126,7 @@ module "ecs-service-backend" {
 
   aws_secret_access_key = var.aws_secret_access_key
 
-  aws_default_region = var.aws_default_region
+  aws_region = var.aws_region
 
   jwt_secret = var.jwt_secret
 

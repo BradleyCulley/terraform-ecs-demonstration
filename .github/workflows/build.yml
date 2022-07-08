@@ -2,26 +2,14 @@ on: push
 name: Main Workflow
 
 env:
-  AWS_DEFAULT_REGION: us-east-2
   FRONTEND_ECR_REPOSITORY: demo-application-frontend
   BACKEND_ECR_REPOSITORY: demo-application-backend
-  FRONTEND_ECS_SERVICE: frontend-ecs-service
-  BACKEND_ECS_SERVICE: backend-ecs-service
-  ECS_CLUSTER: demo-application-ecs-cluster
-  FRONTEND_ECS_TASK_DEFINITION: frontend-service-task-definition.json # set this to the path to your Amazon ECS task definition
-  # file, e.g. .aws/task-definition.json
-  BACKEND_ECS_TASK_DEFINITION: backend-service-task-definition.json # set this to the path to your Amazon ECS task definition
-  # file, e.g. .aws/task-definition.json
-  FRONTEND_CONTAINER_NAME: demo-application-frontend-container # set this to the name of the container in the
-  # containerDefinitions section of your task definition
-  BACKEND_CONTAINER_NAME: demo-application-backend-container # set this to the name of the container in the
-  # containerDefinitions section of your task definition
 
 jobs:
   build-and-deploy:
     name: Provision ECR Repositories, Build and Push Backend Image, Build and Push Frontend Image, Deploy Latest Infrastructure, Including Deploying Latest Frontend and Backend Service Images to ECS
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' # only run on commits to remote master
+    if: github.ref == 'refs/heads/main' # only run on commits to remote main
     environment: production
 
     steps:
@@ -33,7 +21,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
@@ -61,12 +49,50 @@ jobs:
       # when this pipeline runs for the first time.
       # That way, this pipeline can simply be run, after the S3 bucket for remote state, GitHub actions
       # secrets, etc. are set up.
-      - name: Terraform Apply
+      - name: Create Terraform Remote State S3 Bucket If It Don't Already Exist
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_BUCKET_FOR_TERRAFORM_REMOTE_STATE: ${{ secrets.S3_BUCKET_FOR_TERRAFORM_REMOTE_STATE }}
+        run: |
+          # Begin check for current status of the bucket
+          bucketstatus=$(aws s3api head-bucket --bucket "${S3_BUCKET_FOR_TERRAFORM_REMOTE_STATE}" 2>&1)
+          if echo "${bucketstatus}" | grep 'Not Found';
+          then
+          echo "Bucket doesn't exist, creating the bucket...";
+
+          cd infrastructure/s3-bucket-for-terraform-remote-state
+
+          terraform apply \
+          -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
+          -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \
+          -var="aws_region=$AWS_REGION" \
+          --auto-approve
+
+          elif echo "${bucketstatus}" | grep 'Forbidden';
+          then
+          echo "Bucket exists but not owned, stoping the run"
+          exit 1;
+          elif echo "${bucketstatus}" | grep 'Bad Request';
+          then
+          echo "Bucket name specified is less than 3 or greater than 63 characters, stopping the run"
+          exit 1;
+          else
+          echo "Bucket owned and exists, no need to do anything";
+          fi
+
+      # Provisioning the ECR repositories so that they're available for first pushes to them
+      # that happens in later steps below,
+      # when this pipeline runs for the first time.
+      # That way, this pipeline can simply be run, after the S3 bucket for remote state, GitHub actions
+      # secrets, etc. are set up.
+      - name: Create ECR Repositories If They Don't Already Exist
         env:
           IMAGE_TAG: ${{ github.sha }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           cd infrastructure
           terraform apply \
@@ -75,7 +101,7 @@ jobs:
           -var="image_tag=$IMAGE_TAG" \
           -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
           -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \
-          -var="aws_default_region=$AWS_DEFAULT_REGION" \
+          -var="aws_region=$AWS_REGION" \
           --auto-approve
 
       - name: Login to Amazon ECR
@@ -124,12 +150,12 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
         run:  |
           cd infrastructure
           terraform apply \
           -var="image_tag=$IMAGE_TAG" \
           -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
           -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \
-          -var="aws_default_region=$AWS_DEFAULT_REGION" \
+          -var="aws_region=$AWS_REGION" \
           --auto-approve

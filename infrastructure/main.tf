@@ -1,22 +1,3 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 3.0"
-    }
-  }
-
-  backend "s3" {
-    bucket = "demo-application-terraform-remote-state-bucket"
-    key    = "tf-state-key"
-    region = "us-east-2"
-  }
-}
-
-provider "aws" {
-  region = "us-east-2"
-}
-
 variable "image_tag" {
   type = string
 }
@@ -33,7 +14,7 @@ variable "aws_secret_access_key" {
   type = string
 }
 
-variable "aws_default_region" {
+variable "aws_region" {
   type = string
 }
 
@@ -63,6 +44,25 @@ variable "database_name" {
 
 variable "administrative_password" {
   type = string
+}
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.0"
+    }
+  }
+
+  backend "s3" {
+    bucket = "demo-application-terraform-remote-state-bucket"
+    key    = "tf-state-key"
+    region = "us-east-1"
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
 }
 
 module "s3" {
@@ -111,7 +111,7 @@ module "ecs" {
 
   aws_secret_access_key = var.aws_secret_access_key
 
-  aws_default_region = var.aws_default_region
+  aws_region = var.aws_region
 
   jwt_secret = var.jwt_secret
 

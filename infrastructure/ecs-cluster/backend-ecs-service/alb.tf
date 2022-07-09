@@ -31,7 +31,7 @@ resource "aws_alb_target_group" "alb_target_group" {
   target_type = "ip"
 
   health_check {
-    path                = "/backend/healthcheck"
+    path                = "/healthcheck"
     port                = var.port
     protocol            = "HTTP"
     healthy_threshold   = 2

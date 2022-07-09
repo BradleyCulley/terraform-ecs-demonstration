@@ -5,7 +5,7 @@ plan
 .idea
 
 # dependencies
-frontend/node_modules
+**/node_modules
 frontend/.pnp
 .pnp.js
 

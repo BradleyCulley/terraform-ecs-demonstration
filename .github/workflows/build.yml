@@ -38,7 +38,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          bucketstatus=$(aws s3api head-bucket --bucket terraform-ecs-demonstration-remote-state-bucket 2>&1 || true)
+          bucketstatus=$(aws s3api head-bucket --bucket remote-state-bucket-for-terraform-ecs-demonstration 2>&1 || true)
           if echo "${bucketstatus}" | grep "Not Found"; then
             echo "Bucket doesn't exist, creating the bucket..."
             cd infrastructure/s3-bucket-for-terraform-remote-state

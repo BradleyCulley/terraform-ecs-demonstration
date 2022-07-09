@@ -85,14 +85,14 @@ jobs:
         run: |
           cd infrastructure
 
-#          terraform apply \
-#          -target=module.ecr_frontend \
-#          -target=module.ecr_backend \
-#          -var="image_tag=$IMAGE_TAG" \
-#          -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
-#          -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \
-#          -var="aws_region=$AWS_REGION" \
-#          --auto-approve
+          terraform apply \
+          -target=module.ecr_frontend \
+          -target=module.ecr_backend \
+          -var="image_tag=$IMAGE_TAG" \
+          -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
+          -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \
+          -var="aws_region=$AWS_REGION" \
+          --auto-approve
 #
 #      - name: Login to Amazon ECR
 #        id: login-ecr

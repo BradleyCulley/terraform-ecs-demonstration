@@ -1,51 +1,3 @@
-variable "image_tag" {
-  type = string
-}
-
-variable "google_recaptcha_secret" {
-  type = string
-}
-
-variable "aws_access_key_id" {
-  type = string
-}
-
-variable "aws_secret_access_key" {
-  type = string
-}
-
-variable "aws_region" {
-  type = string
-}
-
-variable "jwt_secret" {
-  type = string
-}
-
-variable "token_life" {
-  type = string
-}
-
-variable "database_server_endpoint" {
-  type = string
-}
-
-variable "database_server_username" {
-  type = string
-}
-
-variable "database_server_password" {
-  type = string
-}
-
-variable "database_name" {
-  type = string
-}
-
-variable "administrative_password" {
-  type = string
-}
-
 terraform {
   required_providers {
     aws = {
@@ -63,6 +15,23 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
+}
+
+
+variable "image_tag" {
+  type = string
+}
+
+variable "aws_access_key_id" {
+  type = string
+}
+
+variable "aws_secret_access_key" {
+  type = string
+}
+
+variable "aws_region" {
+  type = string
 }
 
 module "s3" {
@@ -105,25 +74,9 @@ module "ecs" {
 
   image_tag = var.image_tag
 
-  google_recaptcha_secret = var.google_recaptcha_secret
-
   aws_access_key_id = var.aws_access_key_id
 
   aws_secret_access_key = var.aws_secret_access_key
 
   aws_region = var.aws_region
-
-  jwt_secret = var.jwt_secret
-
-  token_life = var.token_life
-
-  database_server_endpoint = var.database_server_endpoint
-
-  database_server_username = var.database_server_username
-
-  database_server_password = var.database_server_password
-
-  database_name = var.database_name
-
-  administrative_password = var.administrative_password
 }

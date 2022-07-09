@@ -26,10 +26,6 @@ variable "image_tag" {
   type = string
 }
 
-variable "google_recaptcha_secret" {
-  type = string
-}
-
 variable "aws_access_key_id" {
   type = string
 }
@@ -39,34 +35,6 @@ variable "aws_secret_access_key" {
 }
 
 variable "aws_region" {
-  type = string
-}
-
-variable "jwt_secret" {
-  type = string
-}
-
-variable "token_life" {
-  type = string
-}
-
-variable "database_server_endpoint" {
-  type = string
-}
-
-variable "database_server_username" {
-  type = string
-}
-
-variable "database_server_password" {
-  type = string
-}
-
-variable "database_name" {
-  type = string
-}
-
-variable "administrative_password" {
   type = string
 }
 
@@ -117,17 +85,9 @@ resource "aws_ecs_task_definition" "service" {
       "essential": true,
       "name": "demo-application-${var.service_name}-container",
       "environment" : [
-          { "name" : "GOOGLE_RECAPTCHA_SECRET", "value" : "${var.google_recaptcha_secret}" },
           { "name" : "AWS_ACCESS_KEY_ID", "value" : "${var.aws_access_key_id}" },
           { "name" : "AWS_SECRET_ACCESS_KEY", "value" : "${var.aws_secret_access_key}" },
           { "name" : "AWS_REGION", "value" : "${var.aws_region}" },
-          { "name" : "JWT_SECRET", "value" : "${var.jwt_secret}" },
-          { "name" : "TOKEN_LIFE", "value" : "${var.token_life}" },
-          { "name" : "DATABASE_SERVER_ENDPOINT", "value" : "${var.database_server_endpoint}" },
-          { "name" : "DATABASE_SERVER_USERNAME", "value" : "${var.database_server_username}" },
-          { "name" : "DATABASE_SERVER_PASSWORD", "value" : "${var.database_server_password}" },
-          { "name" : "DATABASE_NAME", "value" : "${var.database_name}" },
-          { "name" : "ADMINISTRATIVE_PASSWORD", "value" : "${var.administrative_password}" },
           { "name" : "CUSTOM_NODE_PORT", "value" : "443" }
       ]
     }

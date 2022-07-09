@@ -34,10 +34,10 @@ variable "aws_region" {
   type = string
 }
 
-module "s3" {
-  source      = "./s3"
-  bucket_name = "demo-application-s3-bucket"
-}
+#module "s3" {
+#  source      = "./s3"
+#  bucket_name = "demo-application-s3-bucket"
+#}
 
 module "ecr_frontend" {
   source = "./ecr"

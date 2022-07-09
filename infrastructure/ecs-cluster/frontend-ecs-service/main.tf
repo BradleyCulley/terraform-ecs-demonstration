@@ -37,7 +37,7 @@ variable "vpc_subnet_ids" {
 }
 
 resource "aws_ecs_task_definition" "service" {
-  family = "backend-service-family"
+  family = "${var.service_name}-service-family"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = 1024

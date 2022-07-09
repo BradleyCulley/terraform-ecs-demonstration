@@ -47,7 +47,7 @@ variable "ecs_task_role_name" {
 }
 
 resource "aws_ecs_task_definition" "service" {
-  family = "frontend-service-family"
+  family = "${var.service_name}-service-family"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = 2048

@@ -13,4 +13,4 @@ RUN npm ci --production
 ENV CUSTOM_NODE_PORT=3000
 
 # Start the node server
-CMD ["npm","run","ecs"]
+CMD ["npm","run","start"]

@@ -5,6 +5,8 @@ env:
   FRONTEND_ECR_REPOSITORY: demo-application-frontend
   BACKEND_ECR_REPOSITORY: demo-application-backend
 
+concurrency: demonstration_environment
+
 jobs:
   build-and-deploy:
     name: Perform Terraform-Driven Build and Deployment

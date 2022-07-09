@@ -51,7 +51,7 @@ resource "aws_ecs_task_definition" "service" {
         "logDriver": "awslogs",
         "options": {
           "awslogs-create-group": "true",
-          "awslogs-group": "/ecs/demo-application-${var.service_name}-cloudwatch-group",
+          "awslogs-group": "demo-application-${var.service_name}-cloudwatch-group",
           "awslogs-region": "us-east-1",
           "awslogs-stream-prefix": "ecs"
         }

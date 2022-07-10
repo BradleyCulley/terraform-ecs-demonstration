@@ -17,7 +17,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-
 variable "image_tag" {
   type = string
 }

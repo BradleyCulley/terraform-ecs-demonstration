@@ -6,6 +6,10 @@ variable "service_name" {
   type = string
 }
 
+variable "aws_region" {
+  type = string
+}
+
 variable "cluster_id" {
   type = string
 }
@@ -51,7 +55,7 @@ resource "aws_ecs_task_definition" "service" {
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/${var.service_name}-cloudwatch-group",
-          "awslogs-region": "us-east-1",
+          "awslogs-region": "${var.aws_region}",
           "awslogs-stream-prefix": "ecs"
         }
       },

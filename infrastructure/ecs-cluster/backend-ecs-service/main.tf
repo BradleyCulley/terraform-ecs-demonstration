@@ -61,7 +61,7 @@ resource "aws_ecs_task_definition" "service" {
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/${var.service_name}-cloudwatch-group",
-          "awslogs-region": "us-east-1",
+          "awslogs-region": "${var.aws_region}",
           "awslogs-stream-prefix": "ecs"
         }
       },

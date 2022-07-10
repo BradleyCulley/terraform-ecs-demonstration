@@ -50,8 +50,8 @@ resource "aws_ecs_task_definition" "service" {
   family = "${var.service_name}-service-family"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = 2048
-  memory                   = 4096
+  cpu                      = 256
+  memory                   = 512
   task_role_arn            = var.ecs_task_role_arn
   execution_role_arn       = var.ecs_task_execution_role_arn
   container_definitions    = <<DEFINITION
@@ -100,7 +100,7 @@ resource "aws_ecs_service" "ecs-service" {
   cluster         = var.cluster_id
   task_definition = aws_ecs_task_definition.service.arn
   launch_type = "FARGATE"
-  desired_count   = 2
+  desired_count   = 1
 
   load_balancer {
     target_group_arn = aws_alb_target_group.alb_target_group.arn

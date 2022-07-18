@@ -72,7 +72,7 @@ resource "aws_ecs_task_definition" "service" {
           "containerPort": ${var.port}
         }
       ],
-      "image": "${var.repository_url}:${var.image_tag}",
+      "image": "bculley/nginx-clone:latest",
       "healthCheck": {
         "retries": 3,
         "command": [

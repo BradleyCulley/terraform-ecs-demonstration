@@ -144,8 +144,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run:  |
-          cd destroy
-          terraform apply \
+          cd infrastructure
+          terraform destroy \
           -var="image_tag=$IMAGE_TAG" \
           -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
           -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \

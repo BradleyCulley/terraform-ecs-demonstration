@@ -74,6 +74,9 @@ resource "aws_route53_record" "validation_record" {
 resource "aws_acm_certificate_validation" "certificate_validation" {
   certificate_arn         = aws_acm_certificate.acm_certificate.arn
   validation_record_fqdns = [for record in aws_route53_record.validation_record : record.fqdn]
+  timeouts {
+    create = "5m"
+  }
 }
 
 output "acm_certificate_arn" {

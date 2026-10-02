@@ -15,7 +15,7 @@ variable "domain_name" {
 }
 
 data "aws_route53_zone" "selected" {
-  zone_id = "Z04051571V31VZ5ATMZXS"
+  zone_id = "Z06078671RGXVKYY6JG7T"
   private_zone = false
 }
 

@@ -87,7 +87,7 @@ jobs:
         run: |
           cd infrastructure
 
-          terraform apply \
+          terraform destroy \
           -target=module.ecr_frontend \
           -target=module.ecr_backend \
           -var="image_tag=$IMAGE_TAG" \
@@ -145,7 +145,7 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run:  |
           cd infrastructure
-          terraform apply \
+          terraform destroy \
           -var="image_tag=$IMAGE_TAG" \
           -var="aws_access_key_id=$AWS_ACCESS_KEY_ID" \
           -var="aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" \
